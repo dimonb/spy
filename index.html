@@ -202,7 +202,7 @@
             const numPlayers = parseInt(numPlayersInput.value);
             const numSpies = parseInt(numSpiesInput.value);
 
-            if (numPlayers < 3 || numPlayers > 10 || numSpies < 1 || numSpies >= numPlayers) {
+            if (numPlayers < 3 || numPlayers > 40 || numSpies < 1 || numSpies >= numPlayers) {
                 alert(translations[currentLanguage].invalidSetup);
                 return;
             }
