@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spy Game / Игра "Шпион"</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        button, input, select {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input, select {
+            background-color: white;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #textBlock {
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        #location {
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+        }
+        #playerInfo {
+            font-size: 24px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        #passPhoneMessage {
+            font-size: 20px;
+            text-align: center;
+            color: #f00;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="gameTitle">Spy Game / Игра "Шпион"</h1>
+        <div id="setupPhase">
+            <input type="number" id="numPlayers" placeholder="Number of players / Количество игроков" min="3" max="10">
+            <input type="number" id="numSpies" placeholder="Number of spies / Количество шпионов" min="1" max="3">
+            <select id="languageSelect">
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+            </select>
+            <button id="startGame">Start Game / Начать игру</button>
+        </div>
+        <div id="gamePhase" style="display: none;">
+            <div id="textBlock">
+                <div id="location"></div>
+                <div id="playerInfo"></div>
+                <div id="passPhoneMessage"></div>
+            </div>
+            <button id="nextPlayer">Next Player / Следующий игрок</button>
+        </div>
+    </div>
+
+    <script>
+        const locations = {
+            ru: [
+                "Аквапарк", "Аквариум", "Антикварный магазин", "Аптека", "Арена для лазертага", "Археологические раскопки", "Архив", "Астрономическая обсерватория", "Ателье", "Аэропорт",
+                "Балетная школа", "Банк", "Бар", "Бассейн", "Библиотека", "Биржа", "Блошиный рынок", "Боулинг", "Ботанический сад", "Будущее",
+                "Бункер", "Бутик", "Вертолетная площадка", "Ветеринарная клиника", "Винный погреб", "Винодельня", "Военная база", "Вокзал", "Вулкан", "Выставка автомобилей",
+                "Выставка кошек", "Выставка собак", "Выставка цветов", "Гавань", "Галерея современного искусства", "Гидроэлектростанция", "Гольф-клуб", "Горнолыжный курорт", "Горячие источники", "Гостиница",
+                "Дайвинг-центр", "Дворец", "Дельфинарий", "Детективное агентство", "Детская площадка", "Детский сад", "Джунгли", "Дизайнерское бюро", "Дискотека", "Додзё",
+                "Дом мод", "Дом престарелых", "Заброшенный завод", "Завод", "Зал игровых автоматов", "Замок", "Заповедник", "Зоомагазин", "Зоопарк", "Ипподром",
+                "Исследовательская лаборатория", "Кабинет психолога", "Казарма", "Казино", "Каменоломня", "Каток", "Кафе", "Кемпинг", "Кинотеатр", "Киностудия",
+                "Кладбище", "Клиника пластической хирургии", "Книжный магазин", "Колледж", "Комиссионный магазин", "Комната страха", "Концертный зал", "Космодром", "Космопорт", "Крепость",
+                "Крытый рынок", "Кузница", "Кукольный театр", "Лаборатория", "Ледовый дворец", "Лес", "Лодочная станция", "Магазин антиквариата", "Магазин бытовой техники", "Магазин игрушек",
+                "Магазин комиксов", "Магазин музыкальных инструментов", "Магазин одежды", "Магазин подарков", "Магазин спортивных товаров", "Манеж", "Маяк", "Метеостанция", "Метро", "Монастырь",
+                "Музей археологии", "Музей восковых фигур", "Музей естественной истории", "Музей игрушек", "Музей искусств", "Музей космонавтики", "Музей науки и техники", "Музей современного искусства", "Музей транспорта", "Мусороперерабатывающий завод",
+                "Мясная лавка", "Нефтяная платформа", "Ночной клуб", "Обсерватория", "Общежитие", "Океанариум", "Оперный театр", "Оранжерея", "Отделение полиции", "Отель",
+                "Офис", "Парикмахерская", "Парк аттракционов", "Парк культуры и отдыха", "Паром", "Пекарня", "Пентхаус", "Пещера", "Пиратский корабль", "Пирс",
+                "Пиццерия", "Планетарий", "Пляж", "Подводная лодка", "Пожарная станция", "Поле для гольфа", "Посольство", "Почтовое отделение", "Пристань для яхт", "Приют для животных",
+                "Психиатрическая больница", "Пункт проката", "Пустыня", "Радиостанция", "Развалины древнего города", "Рекламное агентство", "Ресторан", "Рок-клуб", "Роллердром", "Рыбный рынок",
+                "Рынок", "Сад скульптур", "Салон красоты", "Сауна", "Свадебный салон", "Свалка", "Секонд-хенд", "Секретная лаборатория", "Скейт-парк", "Склад",
+                "Смотровая площадка", "Спа-салон", "Спортивный зал", "Стадион", "Стоматологическая клиника", "Страусиная ферма", "Студия звукозаписи", "Студия йоги", "Суд", "Супермаркет",
+                "Суши-бар", "Таверна", "Такси", "Танцевальная студия", "Тату-салон", "Таможня", "Театр", "Телестудия", "Теплица", "Типография",
+                "Тренажерный зал", "Тропический остров", "Тюрьма", "Университет", "Фабрика игрушек", "Фабрика мороженого", "Фабрика по производству шоколада", "Ферма", "Филармония", "Фитнес-центр",
+                "Фонтан", "Фотостудия", "Химчистка", "Хоккейная площадка", "Хоспис", "Храм", "Художественная галерея", "Цветочный магазин", "Цирк", "Часовая мастерская",
+                "Чайная", "Шахта", "Школа", "Шоколадная фабрика", "Шоу-рум", "Экопоселение", "Экскурсионный автобус", "Электростанция", "Эскалатор", "Ювелирный магазин",
+                "Яхт-клуб"
+            ],
+            en: [
+                "Aquapark", "Aquarium", "Antique Shop", "Pharmacy", "Laser Tag Arena", "Archaeological Excavation", "Archive", "Astronomical Observatory", "Tailor Shop", "Airport",
+                "Ballet School", "Bank", "Bar", "Swimming Pool", "Library", "Stock Exchange", "Flea Market", "Bowling Alley", "Botanical Garden", "Future",
+                "Bunker", "Boutique", "Helipad", "Veterinary Clinic", "Wine Cellar", "Winery", "Military Base", "Train Station", "Volcano", "Car Exhibition",
+                "Cat Show", "Dog Show", "Flower Exhibition", "Harbor", "Modern Art Gallery", "Hydroelectric Power Plant", "Golf Club", "Ski Resort", "Hot Springs", "Hotel",
+                "Diving Center", "Palace", "Dolphinarium", "Detective Agency", "Playground", "Kindergarten", "Jungle", "Design Bureau", "Disco", "Dojo",
+                "Fashion House", "Retirement Home", "Abandoned Factory", "Factory", "Arcade", "Castle", "Nature Reserve", "Pet Store", "Zoo", "Hippodrome",
+                "Research Laboratory", "Psychologist's Office", "Barracks", "Casino", "Quarry", "Ice Rink", "Cafe", "Campsite", "Cinema", "Film Studio",
+                "Cemetery", "Plastic Surgery Clinic", "Bookstore", "College", "Thrift Store", "Haunted House", "Concert Hall", "Spaceport", "Cosmodrome", "Fortress",
+                "Indoor Market", "Blacksmith's Shop", "Puppet Theater", "Laboratory", "Ice Palace", "Forest", "Boat Station", "Antique Store", "Home Appliance Store", "Toy Store",
+                "Comic Book Store", "Music Instrument Store", "Clothing Store", "Gift Shop", "Sporting Goods Store", "Riding Arena", "Lighthouse", "Weather Station", "Metro", "Monastery",
+                "Archaeology Museum", "Wax Museum", "Natural History Museum", "Toy Museum", "Art Museum", "Space Museum", "Science and Technology Museum", "Museum of Modern Art", "Transportation Museum", "Waste Recycling Plant",
+                "Butcher Shop", "Oil Platform", "Nightclub", "Observatory", "Dormitory", "Oceanarium", "Opera House", "Greenhouse", "Police Station", "Hotel",
+                "Office", "Barbershop", "Amusement Park", "Park", "Ferry", "Bakery", "Penthouse", "Cave", "Pirate Ship", "Pier",
+                "Pizzeria", "Planetarium", "Beach", "Submarine", "Fire Station", "Golf Course", "Embassy", "Post Office", "Yacht Marina", "Animal Shelter",
+                "Psychiatric Hospital", "Rental Point", "Desert", "Radio Station", "Ancient City Ruins", "Advertising Agency", "Restaurant", "Rock Club", "Roller Rink", "Fish Market",
+                "Market", "Sculpture Garden", "Beauty Salon", "Sauna", "Wedding Salon", "Dump", "Second-hand Store", "Secret Laboratory", "Skate Park", "Warehouse",
+                "Observation Deck", "Spa", "Gym", "Stadium", "Dental Clinic", "Ostrich Farm", "Recording Studio", "Yoga Studio", "Court", "Supermarket",
+                "Sushi Bar", "Tavern", "Taxi", "Dance Studio", "Tattoo Parlor", "Customs", "Theater", "TV Studio", "Greenhouse", "Printing House",
+                "Fitness Center", "Tropical Island", "Prison", "University", "Toy Factory", "Ice Cream Factory", "Chocolate Factory", "Farm", "Philharmonic", "Fitness Center",
+                "Fountain", "Photo Studio", "Dry Cleaner's", "Hockey Rink", "Hospice", "Temple", "Art Gallery", "Flower Shop", "Circus", "Watch Repair Shop",
+                "Tea House", "Mine", "School", "Chocolate Factory", "Showroom", "Eco-village", "Tour Bus", "Power Plant", "Escalator", "Jewelry Store",
+                "Yacht Club"
+            ]
+        };
+
+        let currentLocation;
+        let players = [];
+        let currentPlayerIndex = 0;
+        let gameActive = false;
+        let currentLanguage = 'ru';
+
+        const setupPhase = document.getElementById('setupPhase');
+        const gamePhase = document.getElementById('gamePhase');
+        const numPlayersInput = document.getElementById('numPlayers');
+        const numSpiesInput = document.getElementById('numSpies');
+        const startGameBtn = document.getElementById('startGame');
+        const nextPlayerBtn = document.getElementById('nextPlayer');
+        const locationDisplay = document.getElementById('location');
+        const playerInfo = document.getElementById('playerInfo');
+        const passPhoneMessage = document.getElementById('passPhoneMessage');
+        const languageSelect = document.getElementById('languageSelect');
+        const gameTitle = document.getElementById('gameTitle');
+
+        startGameBtn.addEventListener('click', startNewGame);
+        nextPlayerBtn.addEventListener('click', nextPlayer);
+        languageSelect.addEventListener('change', changeLanguage);
+
+        const translations = {
+            en: {
+                startGame: "Start Game",
+                nextPlayer: "Next Player",
+                showRole: "Show Role",
+                player: "Player",
+                spy: "SPY",
+                passPhone: "Pass phone to next player",
+                invalidSetup: "Invalid number of players or spies. Please try again."
+            },
+            ru: {
+                startGame: "Начать игру",
+                nextPlayer: "Следующий игрок",
+                showRole: "Показать роль",
+                player: "Игрок",
+                spy: "ШПИОН",
+                passPhone: "Передайте телефон следующему игроку",
+                invalidSetup: "Неверное количество игроков или шпионов. Пожалуйста, попробуйте снова."
+            }
+        };
+
+        function changeLanguage() {
+            currentLanguage = languageSelect.value;
+            updateTranslations();
+        }
+
+        function updateTranslations() {
+            gameTitle.textContent = currentLanguage === 'en' ? "Spy Game" : "Игра \"Шпион\"";
+            startGameBtn.textContent = translations[currentLanguage].startGame;
+            nextPlayerBtn.textContent = translations[currentLanguage].nextPlayer;
+            numPlayersInput.placeholder = currentLanguage === 'en' ? "Number of players" : "Количество игроков";
+            numSpiesInput.placeholder = currentLanguage === 'en' ? "Number of spies" : "Количество шпионов";
+        }
+
+        function startNewGame() {
+            const numPlayers = parseInt(numPlayersInput.value);
+            const numSpies = parseInt(numSpiesInput.value);
+
+            if (numPlayers < 3 || numPlayers > 10 || numSpies < 1 || numSpies >= numPlayers) {
+                alert(translations[currentLanguage].invalidSetup);
+                return;
+            }
+
+            gameActive = true;
+            currentLocation = locations[currentLanguage][Math.floor(Math.random() * locations[currentLanguage].length)];
+            players = Array(numPlayers).fill(false);
+            
+            for (let i = 0; i < numSpies; i++) {
+                let spyIndex;
+                do {
+                    spyIndex = Math.floor(Math.random() * numPlayers);
+                } while (players[spyIndex]);
+                players[spyIndex] = true;
+            }
+
+            currentPlayerIndex = 0;
+            setupPhase.style.display = 'none';
+            gamePhase.style.display = 'block';
+            updateDisplay();
+        }
+
+        function nextPlayer() {
+            if (!gameActive) return;
+            
+            if (nextPlayerBtn.textContent === translations[currentLanguage].nextPlayer) {
+                passPhoneMessage.textContent = translations[currentLanguage].passPhone;
+                locationDisplay.textContent = "";
+                playerInfo.textContent = "";
+                nextPlayerBtn.textContent = translations[currentLanguage].showRole;
+            } else {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+                if (currentPlayerIndex === 0) {
+                    endGame();
+                    return;
+                }
+                updateDisplay();
+                passPhoneMessage.textContent = "";
+                nextPlayerBtn.textContent = translations[currentLanguage].nextPlayer;
+            }
+        }
+
+        function updateDisplay() {
+            playerInfo.textContent = `${translations[currentLanguage].player} ${currentPlayerIndex + 1}`;
+            if (players[currentPlayerIndex]) {
+                locationDisplay.textContent = translations[currentLanguage].spy;
+            } else {
+                locationDisplay.textContent = currentLocation;
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            setupPhase.style.display = 'block';
+            gamePhase.style.display = 'none';
+            locationDisplay.textContent = '';
+            playerInfo.textContent = '';
+            passPhoneMessage.textContent = '';
+            nextPlayerBtn.textContent = translations[currentLanguage].nextPlayer;
+        }
+
+        updateTranslations();
+    </script>
+</body>
+</html>
